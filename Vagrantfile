@@ -38,6 +38,9 @@ Vagrant.configure("2") do |config|
     storage.vm.hostname = STORAGE_HOSTNAME
     storage.vm.network "private_network", ip: STORAGE_IP
 
+    # disable the default project tree sync folder  
+    storage.vm.synced_folder ".", "/vagrant", disabled: true
+
     storage.vm.provision "shell", path: OS_UPDATE
     storage.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
     storage.vm.provision "shell", path: "./provision/nfs_server.sh"
@@ -59,9 +62,19 @@ Vagrant.configure("2") do |config|
     manager.vm.hostname = MANAGER_HOSTNAME
     manager.vm.network "private_network", ip: MANAGER_IP
 
+    # disable the default project tree sync folder  
+    manager.vm.synced_folder ".", "/vagrant", disabled: true
+
     manager.vm.provision "shell", path: OS_UPDATE
+
+    # manager uses git config (then ssh identity) for user stacks
+    manager.vm.provision "file", source: "~/.ssh/id_rsa", destination: ".ssh/id_rsa"
+    manager.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: ".ssh/id_rsa.pub"
+    manager.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig"
+
     manager.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
     manager.vm.provision "shell", path: "./provision/nfs_client.sh"
+    manager.vm.provision "shell", path: "./provision/docker.sh"
 
     manager.vm.post_up_message = MANAGER_UP_MESSAGE
   end
