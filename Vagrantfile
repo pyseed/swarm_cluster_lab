@@ -44,6 +44,9 @@ Vagrant.configure("2") do |config|
     storage.vm.provision "shell", path: OS_UPDATE
     storage.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
     storage.vm.provision "shell", path: "./provision/nfs_server.sh"
+    # docker is required for registry_server.sh script
+    storage.vm.provision "shell", path: "./provision/docker.sh"
+    storage.vm.provision "shell", path: "./provision/registry_server.sh"
 
     storage.vm.post_up_message = STORAGE_UP_MESSAGE
   end
@@ -61,6 +64,8 @@ Vagrant.configure("2") do |config|
     end
     manager.vm.hostname = MANAGER_HOSTNAME
     manager.vm.network "private_network", ip: MANAGER_IP
+    # forward traefik port to allow from host url such like portainer.localhost:9080
+    manager.vm.network :forwarded_port, guest: 80, host: 9080
 
     # disable the default project tree sync folder  
     manager.vm.synced_folder ".", "/vagrant", disabled: true
@@ -74,6 +79,7 @@ Vagrant.configure("2") do |config|
 
     manager.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
     manager.vm.provision "shell", path: "./provision/nfs_client.sh"
+    manager.vm.provision "shell", path: "./provision/registry_client.sh"
     manager.vm.provision "shell", path: "./provision/docker.sh"
     manager.vm.provision "shell", path: "./provision/manager.sh"
 
