@@ -8,7 +8,7 @@ apt-get install -y -q nfs-common
 # mount point
 mkdir ${provisionNfsClientMountPoint}
 echo " ${provisionNfsServerIp} ${provisionNfsServerHostname}" >> /etc/hosts
-echo "${provisionNfsServerHostname}:/data/ ${provisionNfsClientMountPoint} nfs rw 0 0" >> /etc/fstab
+echo "${provisionNfsServerHostname}:/storage/ ${provisionNfsClientMountPoint} nfs rw 0 0" >> /etc/fstab
 systemctl daemon-reload
 systemctl restart remote-fs.target
  

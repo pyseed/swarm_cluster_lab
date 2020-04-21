@@ -77,6 +77,8 @@ def set_manager(config, index)
       manager.vm.network :forwarded_port, guest: 8080, host: 9088
     end
 
+    manager.vm.synced_folder "stack", "/stack"
+
     # manager uses git config (then ssh identity) for user stacks
     manager.vm.provision "file", source: "~/.ssh/id_rsa", destination: ".ssh/id_rsa"
     manager.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: ".ssh/id_rsa.pub"

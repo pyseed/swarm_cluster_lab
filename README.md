@@ -68,8 +68,10 @@ volumes:
     driver_opts:
       type: nfs
       o: "addr=storage,rw,nolock,soft,exec"
-      device: ":/data/volumes/[service]/myvolume"
+      device: ":/storage/volumes/[service]/myvolume"
 ```
+
+device points to absolute local path in addr host itself
 
 ## registry
 
@@ -86,3 +88,12 @@ curl http://registry:5000/v2/_catalog
 
 'ctop' command, for containers status, is available on each nodes.
 
+## stack bootstrap example
+
+'stack bootstrap' example is 'vagrant shared' via synced_folder setting in set_manager() function
+
+```
+manager.vm.synced_folder "stack", "/stack"
+```
+
+read ./stack/README.md for stack instructions
