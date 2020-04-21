@@ -22,6 +22,7 @@ systemctl daemon-reload && systemctl restart docker.service
 usermod -aG docker vagrant
 newgrp docker
 echo "alias d='docker'" >> /home/${provisionUser}/.bashrc
+echo "alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'" >> /home/${provisionUser}/.bashrc
 
 # status
 systemctl status docker.service
