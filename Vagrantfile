@@ -75,6 +75,7 @@ Vagrant.configure("2") do |config|
     manager.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
     manager.vm.provision "shell", path: "./provision/nfs_client.sh"
     manager.vm.provision "shell", path: "./provision/docker.sh"
+    manager.vm.provision "shell", path: "./provision/manager.sh"
 
     manager.vm.post_up_message = MANAGER_UP_MESSAGE
   end
