@@ -9,6 +9,9 @@
 # - 2 workers
 #
 
+# location of stack to bind in sync folder /stack (default is ./stack example)
+STACK = ENV["SCL_STACK"] || "stack"
+
 PROVIDER = "virtualbox"
 BOX_NAME = "hashicorp/bionic64"
 # if false, explicit 'vagrant box update' is required
@@ -77,7 +80,7 @@ def set_manager(config, index)
       manager.vm.network :forwarded_port, guest: 8080, host: 9088
     end
 
-    manager.vm.synced_folder "stack", "/stack"
+    manager.vm.synced_folder STACK, "/stack"
 
     # manager uses git config (then ssh identity) for user stacks
     manager.vm.provision "file", source: "~/.ssh/id_rsa", destination: ".ssh/id_rsa"
