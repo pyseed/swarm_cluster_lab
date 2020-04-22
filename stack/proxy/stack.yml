@@ -1,0 +1,47 @@
+version: '3.7'
+
+# traefik should always be deployed on a manager to access swarm API
+# traefik is always deployed by constraint on manager 1 for forwarded ports reasons
+    
+services:
+  traefik:
+    image: traefik:v2.1
+    command:
+      - --api.insecure=true # set to 'false' on production
+      - --api.dashboard=true # see https://docs.traefik.io/v2.0/operations/dashboard/#secure-mode for how to secure the dashboard
+      # - --api.debug=true # enable additional endpoints for debugging and profiling
+      # - --log.level=DEBUG # enable debug
+      - --providers.docker=true
+      - --providers.docker.swarmMode=true
+      - --providers.docker.exposedbydefault=false # services are not exposed by default
+      - --providers.docker.network=proxy
+      - --entrypoints.web.address=:80
+      # - --entrypoints.web-secured.address=:443
+    ports:
+      # expose reverse proxy ports, 8080 gui, 80 routes
+      # bypass routing mesh using host mode https://docs.docker.com/engine/swarm/ingress/#bypass-the-routing-mesh
+      - target: 8080
+        published: 8080
+        mode: host
+      - target: 80
+        published: 80
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+    deploy:
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: 
+          # traefik should always be deployed on a manager to access swarm API
+          - node.role == manager
+          # traefik is always deployed by constraint on manager 1 for forwarded ports reasons
+          - node.hostname == manager1
+
+networks:
+  proxy:
+    external: true
