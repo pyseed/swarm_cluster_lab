@@ -1,3 +1,4 @@
+#!/bin/bash
 . /tmp/provision.env
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y -q
@@ -5,7 +6,7 @@ apt-get update -y -q
 # clean docker
 apt-get remove -y -q docker docker-engine docker.io containerd runc
 
-# get docker
+# get docker#!/bin/bash
 apt-get install -y -q apt-transport-https ca-certificates curl gnupg-agent software-properties-common;
 curl -fsSL https://download.docker.com/linux/${provisionOs}/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/${provisionOs} $(lsb_release -cs) stable"

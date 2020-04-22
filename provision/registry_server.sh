@@ -1,3 +1,4 @@
+#!/bin/bash
 # ./provision/docker.sh should be apply before this script
 # registry will expose the default port 5000
 . /tmp/provision.env

@@ -1,3 +1,4 @@
+#!/bin/bash
 . /tmp/provision.env
 export DEBIAN_FRONTEND=noninteractive
 
