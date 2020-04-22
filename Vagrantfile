@@ -91,7 +91,11 @@ def set_manager(config, index)
     manager.vm.provision "shell", path: "./provision/nfs_client.sh"
     manager.vm.provision "shell", path: "./provision/registry_client.sh"
     manager.vm.provision "shell", path: "./provision/docker.sh"
-    manager.vm.provision "shell", path: "./provision/manager.sh"
+    if index == 1
+      manager.vm.provision "shell", path: "./provision/swarm_init.sh"
+    else
+      manager.vm.provision "shell", path: "./provision/manager.sh"
+    end
   end
 end
 
