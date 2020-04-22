@@ -1,7 +1,5 @@
 # swarm_cluster_lab
 
-WIP
-
 a vagrant (virtualbox provider) cluster composed of following nodes (ubuntu 18.04):
 
 - storage: share between nodes a nfs access and a docker registry (for local builds)

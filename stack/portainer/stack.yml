@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    deploy:
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+        - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+    networks:
+      - proxy
+
+volumes:
+  data:
+    driver_opts:
+      type: nfs
+      o: "addr=storage,rw,nolock,soft,exec"
+      device: ":/storage/volumes/portainer/data"
+
+networks:
+  proxy:
+    external: true
