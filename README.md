@@ -23,18 +23,30 @@ vagrant box update
 
 feel free to use defaults or customize ./provision.env and ./Vagrantfile. You can set: IPs, storage hostname and mount point, registry location and its host alias, manager(s), worker(s), ...
 
-before vagrant up, feel free to bind your own stack (in manager vms as /stack), specifying host path with:
+### stack
+
+before vagrant up, you can bind your own stack (in manager vms as /stack), specifying host path with:
 
 ```
 export SCL_STACK=$HOME/mystack
 ```
 
-if SCL_STACK is not set, default stack bootstrap example from ./stack directory of current repository will be bind.
+if SCL_STACK is not set, default 'stack bootstrap' example from ./stack directory of current repository will be used.
+
+### ram
+
+ram (in Mo) can be set with following env vars:
+
+- SCL_STORAGE_RAM (default 512)
+- SCL_MANAGER_RAM (default 1536)
+- SCL_WORKER_RAM  (default 2048)
+
+### cluster up
 
 ```
 vagrant up
 vagrant halt
-vagrant snapshot save up
+vagrant snapshot save init
 
 vagrant up
 vagrant ssh manager1
@@ -44,7 +56,6 @@ from the manager1 session you can:
 
 - browse shared nfs storage in /mnt/storage
 - use the docker registry: registry:5000
-
 
 ### stack bootstrap example
 

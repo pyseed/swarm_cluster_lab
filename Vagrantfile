@@ -21,20 +21,20 @@ BOX_HALT_TIMEOUT = 30
 # activate/desactivate OS update at provisioning (time consuming)
 OS_UPDATE = true
 
-STORAGE_RAM = 512
+STORAGE_RAM = ENV["SCL_STORAGE_RAM"] || 512
 STORAGE_HOSTNAME = 'storage'
 # storage ip should match provisionNfsServerIp of provision.env
 STORAGE_IP = "10.0.10.10"
 STORAGE_UP_MESSAGE = ""
 
-MANAGER_RAM = 1024
+MANAGER_RAM = ENV["SCL_MANAGER_RAM"] || 1536
 MANAGER_HOSTNAME_BASE = 'manager'
 # 1st manager (Leader) should match managerIp of provision.env
 # manager ip(s) should be in range of provisionNfsClientRange of provision.env
 MANAGER_IP_BASE = "10.0.10.2"
 MANAGER_UP_MESSAGE = "/mnt/storage to access storage. registry host to access docker registry."
 
-WORKER_RAM = 1024
+WORKER_RAM = ENV["SCL_WORKER_RAM"] || 2048
 WORKER_HOSTNAME_BASE = 'worker'
 # workers ip(s) should be in range of provisionNfsClientRange of provision.env
 WORKER_IP_BASE = "10.0.10.3"
