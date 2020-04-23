@@ -21,6 +21,9 @@ BOX_HALT_TIMEOUT = 30
 # activate/desactivate OS update at provisioning (time consuming)
 OS_UPDATE = true
 
+# provision scripts path
+PROVISION_DIR = "./provision/"
+
 STORAGE_RAM = ENV["SCL_STORAGE_RAM"] || 512
 STORAGE_HOSTNAME = 'storage'
 # storage ip should match provisionNfsServerIp of provision.env
@@ -43,6 +46,14 @@ WORKER_UP_MESSAGE = "/mnt/storage to access storage. registry host to access doc
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 
+def provision_file(node, src, target)
+  node.vm.provision "file", source: src, destination: target
+end
+
+def provision_shell(node, file, root=true)
+  node.vm.provision "shell", path: PROVISION_DIR + file, privileged: root
+end
+
 def set_vm(node, ram, hostname, ip, up_message)
   node.vm.box = BOX_NAME
   node.vm.box_check_update = BOX_CHECK_UPDATE
@@ -62,8 +73,9 @@ def set_vm(node, ram, hostname, ip, up_message)
   node.vm.synced_folder ".", "/vagrant", disabled: true
 
   if OS_UPDATE
-    node.vm.provision "shell", path: "./provision/silent_update.sh"
+    provision_shell(node, "silent_update.sh")
   end
+  provision_file(node, "./provision.env", "/tmp/provision.env")
 end
 
 def set_manager(config, index)
@@ -83,19 +95,19 @@ def set_manager(config, index)
     manager.vm.synced_folder STACK, "/stack"
 
     # manager uses git config (then ssh identity) for user stacks
-    manager.vm.provision "file", source: "~/.ssh/id_rsa", destination: ".ssh/id_rsa"
-    manager.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: ".ssh/id_rsa.pub"
-    manager.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig"
+    provision_file(manager, "~/.ssh/id_rsa", ".ssh/id_rsa")
+    provision_file(manager, "~/.ssh/id_rsa.pub", ".ssh/id_rsa.pub")
+    provision_file(manager, "~/.gitconfig", ".gitconfig")
 
-    manager.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
-    manager.vm.provision "shell", path: "./provision/nfs_client.sh"
-    manager.vm.provision "shell", path: "./provision/registry_client.sh"
-    manager.vm.provision "shell", path: "./provision/docker.sh"
-    manager.vm.provision "shell", path: "./provision/manager_packages.sh"
+    # provisioning
+    provision_shell(manager, "nfs_client.sh")
+    provision_shell(manager, "registry_client.sh")
+    provision_shell(manager, "docker.sh")
+    provision_shell(manager, "manager_packages.sh")
     if index == 1
-      manager.vm.provision "shell", path: "./provision/swarm_init.sh"
+      provision_shell(manager, "swarm_init.sh")
     else
-      manager.vm.provision "shell", path: "./provision/manager_join.sh"
+      provision_shell(manager, "manager_join.sh")
     end
   end
 end
@@ -107,12 +119,12 @@ def set_worker(config, index)
   config.vm.define hostname do |worker|
     set_vm(worker, WORKER_RAM, hostname, ip, WORKER_UP_MESSAGE)
 
-    worker.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
-    worker.vm.provision "shell", path: "./provision/nfs_client.sh"
-    worker.vm.provision "shell", path: "./provision/registry_client.sh"
-    worker.vm.provision "shell", path: "./provision/docker.sh"
-    worker.vm.provision "shell", path: "./provision/worker_packages.sh"
-    worker.vm.provision "shell", path: "./provision/worker_join.sh"
+  # provisioning
+    provision_shell(worker, "nfs_client.sh")
+    provision_shell(worker, "registry_client.sh")
+    provision_shell(worker, "docker.sh")
+    provision_shell(worker, "worker_packages.sh")
+    provision_shell(worker, "worker_join.sh")
   end
 end
 
@@ -123,11 +135,10 @@ Vagrant.configure("2") do |config|
   config.vm.define STORAGE_HOSTNAME do |storage|
     set_vm(storage, STORAGE_RAM, STORAGE_HOSTNAME, STORAGE_IP, STORAGE_UP_MESSAGE)
 
-    storage.vm.provision "file", source: "./provision.env", destination: "/tmp/provision.env"
-    storage.vm.provision "shell", path: "./provision/nfs_server.sh"
+    provision_shell(storage, "nfs_server.sh")
     # docker is required for registry_server.sh script
-    storage.vm.provision "shell", path: "./provision/docker.sh"
-    storage.vm.provision "shell", path: "./provision/registry_server.sh"
+    provision_shell(storage, "docker.sh")
+    provision_shell(storage, "registry_server.sh")
   end
 
   # manager 1 node
