@@ -91,10 +91,11 @@ def set_manager(config, index)
     manager.vm.provision "shell", path: "./provision/nfs_client.sh"
     manager.vm.provision "shell", path: "./provision/registry_client.sh"
     manager.vm.provision "shell", path: "./provision/docker.sh"
+    manager.vm.provision "shell", path: "./provision/manager_packages.sh"
     if index == 1
       manager.vm.provision "shell", path: "./provision/swarm_init.sh"
     else
-      manager.vm.provision "shell", path: "./provision/manager.sh"
+      manager.vm.provision "shell", path: "./provision/manager_join.sh"
     end
   end
 end
@@ -110,7 +111,8 @@ def set_worker(config, index)
     worker.vm.provision "shell", path: "./provision/nfs_client.sh"
     worker.vm.provision "shell", path: "./provision/registry_client.sh"
     worker.vm.provision "shell", path: "./provision/docker.sh"
-    worker.vm.provision "shell", path: "./provision/worker.sh"
+    worker.vm.provision "shell", path: "./provision/worker_packages.sh"
+    worker.vm.provision "shell", path: "./provision/worker_join.sh"
   end
 end
 
@@ -130,6 +132,9 @@ Vagrant.configure("2") do |config|
 
   # manager 1 node
   set_manager(config, 1)
+
+  # manager 2 node
+  # set_manager(config, 2)
 
   # worker 1 node
   set_worker(config, 1)

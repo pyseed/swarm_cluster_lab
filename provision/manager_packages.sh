@@ -2,4 +2,5 @@
 . /tmp/provision.env
 export DEBIAN_FRONTEND=noninteractive
 
-docker swarm init --advertise-addr ${managerIp}
+apt-get update -y -q
+apt-get install -y -q git tar tree vim wget
