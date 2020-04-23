@@ -4,7 +4,7 @@ a vagrant (virtualbox provider) cluster composed of following nodes (ubuntu 18.0
 
 - storage: share between nodes a nfs access and a docker registry (for local builds)
 - 1 manager (candidate to deploy traefik (swarm api access))
-- 2 workers
+- 2 workers (optional) (default)
 
 hostnames:
 - storage
@@ -21,7 +21,16 @@ each manager/worker has access to 'storage' and 'registry' hosts.
 vagrant box update
 ```
 
-feel free to use defaults or customize ./provision.env and ./Vagrantfile. You can set: IPs, storage hostname and mount point, registry location and its host alias, manager(s), worker(s), ...
+feel free to use defaults or customize ./provision.env and ./Vagrantfile.
+
+you can customize:
+
+- private IPs
+- storage hostname and mount point
+- registry location and its host alias
+- manager(s)
+- worker(s)
+- or comment all workers: a single manager node to try swarm, using less resources, but using a pattern that will support more workers later with no change
 
 ### stack
 
