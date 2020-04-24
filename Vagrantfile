@@ -2,12 +2,9 @@
 # vi: set ft=ruby :
 # https://www.vagrantup.com/docs/vagrantfile/machine_settings.html
 
-#
-# a cluster composed of following nodes:
-# - storage: nfs server (shared between nodes persistent volumes) and docker registry for 'local swarm builds'
-# - 1 manager 1 manager (candidate to deploy traefik (swarm api access))
-# - 2 workers
-#
+# managers and workers count
+MANAGERS = 1
+WORKERS = 2
 
 # location of stack to bind in sync folder /stack (default is ./stack example)
 STACK = ENV["SCL_STACK"] || "stack"
@@ -26,25 +23,32 @@ PROVISION_DIR = "./provision/"
 
 STORAGE_RAM = ENV["SCL_STORAGE_RAM"] || 512
 STORAGE_HOSTNAME = 'storage'
-# storage ip should match provisionNfsServerIp of provision.env
+# ip should match provisionNfsServerIp of provision.env
 STORAGE_IP = "10.0.10.10"
 STORAGE_UP_MESSAGE = ""
 
-MANAGER_RAM = ENV["SCL_MANAGER_RAM"] || 1536
+DATA_RAM = ENV["SCL_DATA_RAM"] || 1024
+DATA_HOSTNAME = 'data'
+# ip should match provisionDataIp of provision.env
+DATA_IP = "10.0.10.11"
+DATA_UP_MESSAGE = ""
+# activate postgres in data storage
+DATA_POSTGRES = false
+
+MANAGER_RAM = ENV["SCL_MANAGER_RAM"] || 1024
 MANAGER_HOSTNAME_BASE = 'manager'
-# 1st manager (Leader) should match managerIp of provision.env
-# manager ip(s) should be in range of provisionNfsClientRange of provision.env
+# manager leader (1st) ip should match managerIp of provision.env
+# ip(s) should be in range of provisionNfsClientRange of provision.env
 MANAGER_IP_BASE = "10.0.10.2"
 MANAGER_UP_MESSAGE = "/mnt/storage to access storage. registry host to access docker registry."
 
 WORKER_RAM = ENV["SCL_WORKER_RAM"] || 2048
 WORKER_HOSTNAME_BASE = 'worker'
-# workers ip(s) should be in range of provisionNfsClientRange of provision.env
+# ip(s) should be in range of provisionNfsClientRange of provision.env
 WORKER_IP_BASE = "10.0.10.3"
 WORKER_UP_MESSAGE = "/mnt/storage to access storage. registry host to access docker registry."
 
 ENV["LC_ALL"] = "en_US.UTF-8"
-
 
 def provision_file(node, src, target)
   node.vm.provision "file", source: src, destination: target
@@ -102,6 +106,7 @@ def set_manager(config, index)
     # provisioning
     provision_shell(manager, "nfs_client.sh")
     provision_shell(manager, "registry_client.sh")
+    provision_shell(manager, "data_client.sh")
     provision_shell(manager, "docker.sh")
     provision_shell(manager, "manager_packages.sh")
     if index == 1
@@ -122,6 +127,7 @@ def set_worker(config, index)
   # provisioning
     provision_shell(worker, "nfs_client.sh")
     provision_shell(worker, "registry_client.sh")
+    provision_shell(worker, "data_client.sh")
     provision_shell(worker, "docker.sh")
     provision_shell(worker, "worker_packages.sh")
     provision_shell(worker, "worker_join.sh")
@@ -134,22 +140,27 @@ Vagrant.configure("2") do |config|
   # WARNING: destroying it = loss of data (persistent volumes)
   config.vm.define STORAGE_HOSTNAME do |storage|
     set_vm(storage, STORAGE_RAM, STORAGE_HOSTNAME, STORAGE_IP, STORAGE_UP_MESSAGE)
-
     provision_shell(storage, "nfs_server.sh")
-    # docker is required for registry_server.sh script
-    provision_shell(storage, "docker.sh")
-    provision_shell(storage, "registry_server.sh")
   end
 
-  # manager 1 node
-  set_manager(config, 1)
+  # data node
+  # WARNING: destroying it = loss of data (databases, ...)
+  config.vm.define DATA_HOSTNAME do |data|
+    set_vm(data, DATA_RAM, DATA_HOSTNAME, DATA_IP, DATA_UP_MESSAGE)
+    provision_shell(data, "docker.sh")
+    provision_shell(data, "registry_server.sh")
+    if DATA_POSTGRES
+      provision_shell(data, "data_postgres.sh")
+    end
+  end
 
-  # manager 2 node
-  # set_manager(config, 2)
+  # managers
+  for i in 1..MANAGERS do
+    set_manager(config, i)
+  end
 
-  # worker 1 node
-  set_worker(config, 1)
-
-  # worker 2 node
-  set_worker(config, 2)
+  # workers
+  for i in 1..WORKERS do
+    set_worker(config, i)
+  end
 end
