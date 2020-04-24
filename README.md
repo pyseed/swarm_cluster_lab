@@ -11,8 +11,8 @@ hostnames:
 - storage
 - data
 - registry (by default an alias of data)
-- manager1, ..., manangerN
-- worker1, ..., worker?
+- manager1, ..., managerN
+- worker1, ..., workerN
 
 each manager/worker has access to 'storage' and 'registry' hosts.
 
@@ -26,14 +26,13 @@ feel free to use defaults or customize: provision.env, ./Vagrantfile and provisi
 
 you can customize:
 
-- count of managers/workers using MANAGERS/WORKERS in vagrant file
+- count of managers/workers using MANAGERS/WORKERS in vagrant file (with only 1 manager and 0 workers, you can try swarm using less resources, but using a pattern that will support more workers later with no change)
 - private IPs
 - storage hostname and mount point
 - data hostname
 - activate postgres using DATA_POSTGRES = true in vagrant file (default false)
 - write your own data node provisioning (setup the database engine of your choice). add it to the data node: `provision_shell(data, "data_myscript.sh")`. there is an example script for postgres (provision/data_postgres.sh).
 - registry location and its host alias
-- or comment all workers: a single manager node to try swarm, using less resources, but using a pattern that will support more workers later with no change
 - update or not the vagrant os with OS_UPDATE (default true)
 
 ### stack
@@ -128,8 +127,8 @@ curl http://registry:5000/v2/_catalog
 
 write your own data node provisioning (setup the database engine of your choice). add it to the data node: `provision_shell(data, "data_myscript.sh")`.
 
-there is an example script for postgres (provision/data_postgres.sh). activate postgres using POSTGRES = true in vagrant file.
+there is an example script for postgres (provision/data_postgres.sh). activate postgres using POSTGRES = true in vagrant file. each manager/worker can connect to 'postgres' host at port 5432.
 
 ## ctop
 
-'ctop' command, for containers status, is available on each nodes.
+'ctop' command, for containers status, is available on each node.
