@@ -89,12 +89,12 @@ storage node provides a nfs shared access, to bind persistent volumes data accro
 
 ### bootstrap a service storage volume:
 
-assuming [service] is the service name:
+assuming [stack] is the stack name (directory) and [service] is the service name:
 
 ```
 vagrant ssh manager1
 
-$ mkdir -p /media/storage/volumes/[service]/myvolume
+$ mkdir -p /media/storage/volumes/[stack]/[service]/myvolume
 ```
 
 **WARNING**: do not bind directly on /media/storage/, as nfs storage is generic and not dedicated only to docker volumes.
@@ -102,15 +102,50 @@ $ mkdir -p /media/storage/volumes/[service]/myvolume
 ### compose file service volume declaration:
 
 ```
+services:
+  service:
+  volumes:
+    - type: volume
+      source: service_data
+      target: /data
+      volume:
+        # nocopy is mandatory (volume is shared accros cluster via nfs)
+        nocopy: true
+
+# device points to absolute local path in addr host itself.
 volumes:
-  myvolume:
+  [service]_myvolume:
     driver_opts:
-      type: nfs
+      type: "nfs"
       o: "addr=storage,rw,nolock,soft,exec"
-      device: ":/storage/volumes/[service]/myvolume"
+      device: ":/storage/volumes/[stack]/[service]/myvolume"
 ```
 
-note: device points to absolute local path in addr host itself.
+with docker volume ls, volume will be as [stack]_[service]_myvolume
+
+example with 'portainer' service of the 'admin' stack:
+
+```
+services:
+  portainer:
+    image: portainer/portainer
+    ...
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - type: volume
+        source: portainer_data
+        target: /data
+        volume:
+          nocopy: true
+
+volumes:
+  portainer_data:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=storage,rw,nolock,soft"
+      device: ":/storage/volumes/admin/portainer/data"
+```
 
 ## registry
 
