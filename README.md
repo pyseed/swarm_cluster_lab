@@ -154,6 +154,8 @@ each node can push any 'local cluster' builds to the registry:
 - hostname 'registry'
 - port: 5000
 
+the registry accepts http vs https as "insecure-registries": ["registry:5000"] is set in /etc/docker/daemon.json of each node (via provision/docker.sh)
+
 ```
 curl http://registry:5000/v2/_catalog
 ```

@@ -13,9 +13,9 @@ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/${provisi
 apt-get update
 apt-get install -y -q docker-ce docker-ce-cli containerd.io
 
-# set daemon: public loop + increase bridge networks range (253 networks vs the default 31)
+# set daemon: public loop + increase bridge networks range (253 networks vs the default 31) + declare 'registry' host as insecure registry
 sed -i 's|-H fd://|-H fd:// -H tcp://0.0.0.0:2375|g' /lib/systemd/system/docker.service
-echo '{ "default-address-pools": [ {"base": "172.17.0.0/16", "size": 24} ] }' > /etc/docker/daemon.json
+echo '{ "default-address-pools": [ {"base": "172.17.0.0/16", "size": 24} ], "insecure-registries": ["registry:5000"] }' > /etc/docker/daemon.json
 chmod 0600 /etc/docker/daemon.json
 systemctl daemon-reload && systemctl restart docker.service
 
