@@ -25,6 +25,9 @@ newgrp docker
 echo "alias d='docker'" >> /home/${provisionUser}/.bashrc
 echo "alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'" >> /home/${provisionUser}/.bashrc
 
+# autocompletion
+sudo curl https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker -o /etc/bash_completion.d/docker.sh
+
 # status
 systemctl status docker.service
 docker --version
